@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+}
+
+group 'com.example.gameName'
+version '1.0-SNAPSHOT'
+
+repositories {
+
+    jcenter()
+    mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+
+    maven {
+
+        name "Candor Bintray"
+        url "https://dl.bintray.com/candor/candor-alpha"
+    }
+
+    maven {
+
+        name "Cybernize Bintray"
+        url "https://dl.bintray.com/candor/cybernize"
+    }
+    maven {
+
+        name 'Swing Extensions repo'
+        url 'https://dl.bintray.com/innoxium/SwingExtensions'
+    }
+}
+
+dependencies {
+
+    implementation 'uk.co.innoxium.candor:candor-api:0.2.8'
+
+    implementation 'uk.co.innoxium.cybernize:cybernize:1.1.4'
+    implementation 'com.electronwill.night-config:toml:3.6.3'
+
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.google.guava:guava:29.0-jre'
+    implementation "org.apache.commons:commons-lang3:3.10"
+    implementation "commons-io:commons-io:2.7"
+    implementation "org.apache.commons:commons-math3:3.6.1"
+    implementation 'com.github.f4b6a3:uuid-creator:2.7.8'
+}
+
+jar {
+
+    manifest {
+
+        attributes 'Candor-Module-Class': 'com.example.gameName.MyGameModule'
+    }
+}

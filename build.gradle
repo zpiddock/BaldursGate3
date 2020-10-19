@@ -1,8 +1,9 @@
 plugins {
+
     id 'java'
 }
 
-group 'com.example.gameName'
+group 'uk.co.innoxium.baldursgate'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -48,6 +49,6 @@ jar {
 
     manifest {
 
-        attributes 'Candor-Module-Class': 'com.example.gameName.MyGameModule'
+        attributes 'Candor-Module-Class': 'uk.co.innoxium.baldursgate.BaldursGateModule'
     }
 }

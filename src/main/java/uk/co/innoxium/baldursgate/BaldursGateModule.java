@@ -4,13 +4,28 @@ import uk.co.innoxium.candor.module.AbstractModInstaller;
 import uk.co.innoxium.candor.module.AbstractModule;
 import uk.co.innoxium.candor.module.ModuleSelector;
 import uk.co.innoxium.candor.module.RunConfig;
+import uk.co.innoxium.candor.util.NativeDialogs;
+import uk.co.innoxium.candor.util.WindowUtils;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 
 public class BaldursGateModule extends AbstractModule {
 
+    public static boolean loaded = false;
+
+    public BaldursGateModule() {
+
+        BG3Settings.init();
+    }
+
     private File game;
     protected File gameHome;
+    private static final File bg3Docs =
+            new File(FileSystemView.getFileSystemView().getDefaultDirectory().getAbsoluteFile(),
+                    "Larian Studios/Baldur's Gate 3");
+    public static File playerProfiles = new File(bg3Docs, "PlayerProfiles");
 
     @Override
     public File getGame() {
@@ -21,7 +36,7 @@ public class BaldursGateModule extends AbstractModule {
     @Override
     public File getModsFolder() {
 
-        return new File(gameHome, "data");
+        return new File(bg3Docs, "Mods");
     }
 
     @Override
@@ -30,6 +45,17 @@ public class BaldursGateModule extends AbstractModule {
         this.game = file;
         // Game home is BaldursGate3, game is /bin/bg3.exe
         this.gameHome = file.getParentFile().getParentFile();
+        if(!loaded && BG3Settings.playerProfile.isEmpty()) {
+
+            NativeDialogs.showInfoDialog("Baldur's Gate 3 Module",
+                    "Please select the player profile to use\nClick ok to contrinue.",
+                    "ok",
+                    "info",
+                    true);
+            File playerProfile = NativeDialogs.openPickFolder(playerProfiles);
+            BG3Settings.playerProfile = playerProfile.getAbsolutePath();
+            loaded = true;
+        }
     }
 
     @Override
@@ -64,13 +90,13 @@ public class BaldursGateModule extends AbstractModule {
     @Override
     public String[] acceptedExe() {
 
-        return new String[] { "baldursgate3" };
+        return new String[] { "bg3", "bg3_dx11" };
     }
 
     @Override
     public String getModFileFilterList() {
 
-        return "7z,zip,rar,pak";
+        return "zip";
     }
 
     @Override

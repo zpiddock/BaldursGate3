@@ -1,6 +1,7 @@
 package uk.co.innoxium.baldursgate;
 
 import org.apache.commons.io.FileUtils;
+import uk.co.innoxium.baldursgate.bg3m.BG3MInstaller;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModInstaller;
 import uk.co.innoxium.candor.module.AbstractModule;
@@ -14,6 +15,7 @@ import java.io.IOException;
 public class BaldursGateModInstaller extends AbstractModInstaller {
 
     public BaldursGateModInstaller(AbstractModule module) {
+
         super(module);
     }
 
@@ -26,19 +28,21 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
     @Override
     public boolean install(Mod mod) {
 
-        if(Utils.getExtension(mod.getFile()).equalsIgnoreCase("pak")) {
-
-            return installPak(mod);
-        }
-
-        try {
-
-            return installArchive(mod);
-        } catch (IOException e) {
-
-            e.printStackTrace();
-            return false;
-        }
+        BG3MInstaller installer = new BG3MInstaller(module);
+        return installer.installBG3M(mod);
+//        if(Utils.getExtension(mod.getFile()).equalsIgnoreCase("pak")) {
+//
+//            return installPak(mod);
+//        }
+//
+//        try {
+//
+//            return installArchive(mod);
+//        } catch (IOException e) {
+//
+//            e.printStackTrace();
+//            return false;
+//        }
     }
 
     private boolean installPak(Mod mod) {

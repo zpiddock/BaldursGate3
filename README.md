@@ -7,6 +7,9 @@ download candor and the mod manager from the releases tab
 
 # How should a mod be laid out?
 
+You can either follow the the steps below,  
+Or use the Tool from ShinyHobo, which can be found [here](https://github.com/ShinyHobo/bg3-mod-packer)
+
 # Mods should be a zip archive
 
 * Mods should include all .pak files in the root of the archive

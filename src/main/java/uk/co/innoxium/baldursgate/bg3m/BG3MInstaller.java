@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class BG3MInstaller {
@@ -204,7 +205,6 @@ public class BG3MInstaller {
 
                     if(attr.getName().equalsIgnoreCase("id")) {
 
-                        System.out.println(element.getName());
                         if(attr.getValue().equalsIgnoreCase("mods")) {
 
                             mods.set(element);
@@ -269,5 +269,18 @@ public class BG3MInstaller {
         xmlWriter.flush();
 
         xmlWriter.close();
+    }
+
+    public boolean verifyMod(Mod mod) {
+
+        try(ZipFile zipFile = new ZipFile(mod.getFile())) {
+
+            ZipEntry info = zipFile.getEntry("info.json");
+            return info != null;
+        } catch (IOException e) {
+
+            e.printStackTrace();
+            return false;
+        }
     }
 }

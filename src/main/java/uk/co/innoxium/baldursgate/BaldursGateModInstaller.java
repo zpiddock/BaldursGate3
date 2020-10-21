@@ -6,6 +6,7 @@ import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModInstaller;
 import uk.co.innoxium.candor.module.AbstractModule;
 import uk.co.innoxium.candor.module.ModuleSelector;
+import uk.co.innoxium.candor.util.NativeDialogs;
 import uk.co.innoxium.candor.util.Utils;
 import uk.co.innoxium.cybernize.archive.Archive;
 import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
@@ -29,7 +30,18 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
     public boolean install(Mod mod) {
 
         BG3MInstaller installer = new BG3MInstaller(module);
-        return installer.installBG3M(mod);
+        if(installer.verifyMod(mod)) {
+
+            return installer.installBG3M(mod);
+        } else {
+
+            NativeDialogs.showInfoDialog("Baldur's Gate 3 Module",
+                    String.format("The mod %s is not a valid bg3 mod, and cannot be installed.\nView the authors instructions", mod.getReadableName()),
+                    "ok",
+                    "error",
+                    true);
+            return false;
+        }
 //        if(Utils.getExtension(mod.getFile()).equalsIgnoreCase("pak")) {
 //
 //            return installPak(mod);

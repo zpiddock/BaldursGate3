@@ -25,10 +25,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.ZipFile;
 
 public class BG3MInstaller {
 
     private final AbstractModule module;
+    private final String xPath = "//save/region/node/children/node";
 
     public BG3MInstaller(AbstractModule module) {
 
@@ -36,10 +38,103 @@ public class BG3MInstaller {
     }
 
     /**
+     * Runs though the uninstallation steps
+     * - backup modsettings.lsx
+     * - Read info.json for each mod details
+     * - Determine which nodes to remove from modsettings.lsx
+     * - remove nodes
+     * - write xml
+     * - fallback on modsettings.backup.lsx
+     * - remove paks
+     * @param mod
+     * @return
+     */
+    public boolean uninstallBG3M(Mod mod) {
+
+        try {
+
+            File playerProfile = new File(BG3Settings.playerProfile);
+            FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
+
+            // Extract to temp location
+            File temp = Files.createTempDirectory("bg3").toFile();
+            Archive archive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).outputDirectory(temp).build();
+            archive.extract();
+
+            File info = new File(temp, "info.json");
+            JsonObject contents = JsonUtil.getObjectFromPath(info.toPath());
+
+            JsonArray modsArray = JsonUtil.getArray(contents, "mods");
+
+            modsArray.forEach(jsonElement -> {
+
+                BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject)jsonElement);
+                removeXMLElements(bg3Mod);
+            });
+            mod.getAssociatedFiles().forEach(element -> {
+
+                FileUtils.deleteQuietly(new File(element.getAsString()));
+            });
+            return true;
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean removeXMLElements(BG3Mod mod) {
+
+        File modsetings = new File(BG3Settings.playerProfile, "modsettings.lsx");
+
+        try {
+
+            Document doc = getSaxReader().read(modsetings);
+            // Get the element for the Mods node
+            AtomicReference<Element> mods = new AtomicReference<>();
+            AtomicReference<Element> modOrder = new AtomicReference<>();
+            List<Node> nodes = doc.selectNodes(xPath);
+            nodes.forEach(node -> {
+
+                Element element = (Element)node;
+                element.attributeIterator().forEachRemaining(attr -> {
+
+                    if(attr.getName().equalsIgnoreCase("id")) {
+
+                        System.out.println(element.getName());
+                        if(attr.getValue().equalsIgnoreCase("mods")) {
+
+                            mods.set(element);
+                        }
+                        if(attr.getValue().equalsIgnoreCase("modorder")) {
+
+                            modOrder.set(element);
+                        }
+                    }
+                });
+            });
+            Element modChildren = (Element)mods.get().selectSingleNode("children");
+            mod.removeModShortDesc(modChildren);
+            Element modOrderChildren = (Element)modOrder.get().selectSingleNode("children");
+            if(modOrderChildren == null) {
+
+                modOrderChildren = modOrder.get().addElement("children");
+            }
+            mod.removeModOrder(modOrderChildren);
+
+            writeXMLToFile(doc);
+            return true;
+        } catch (DocumentException | IOException e) {
+
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
      * Runs through the installation steps
      * - Extract mod to temp folder
      * - Read contents of info.json
-     * - determine which playerprofile to use - Hardest one...
      * - build two XML nodes from json, id's: Module, ModuleShortDesc
      * - try to add these to XML - restore to default if anything breaks
      * - finally copy pak to mods folder
@@ -63,6 +158,8 @@ public class BG3MInstaller {
 
             JsonArray modsArray = JsonUtil.getArray(contents, "mods");
 
+            JsonArray associatedPaks = new JsonArray();
+
             modsArray.forEach(jsonElement -> {
 
                 BG3Mod bg3Mod = BG3Mod.fromJson(jsonElement.getAsJsonObject());
@@ -71,12 +168,15 @@ public class BG3MInstaller {
 
                 try {
 
-                    FileUtils.copyFileToDirectory(modPak, module.getModsFolder());
+                    File newPakFile = new File(module.getModsFolder(), bg3Mod.folderName + ".pak");
+                    associatedPaks.add(newPakFile.getAbsolutePath());
+                    FileUtils.copyFile(modPak, newPakFile);
                 } catch (IOException e) {
 
                     e.printStackTrace();
                 }
             });
+            mod.setAssociatedFiles(associatedPaks);
 
             return true;
         } catch (IOException e) {
@@ -96,7 +196,7 @@ public class BG3MInstaller {
             // Get the element for the Mods node
             AtomicReference<Element> mods = new AtomicReference<>();
             AtomicReference<Element> modOrder = new AtomicReference<>();
-            List<Node> nodes = doc.selectNodes("//save/region/node/children/node");
+            List<Node> nodes = doc.selectNodes(xPath);
             nodes.forEach(node -> {
 
                 Element element = (Element)node;
@@ -124,7 +224,6 @@ public class BG3MInstaller {
                 modOrderChildren = modOrder.get().addElement("children");
             }
             mod.toModOrder(modOrderChildren);
-            System.out.println(doc.asXML());
 
             writeXMLToFile(doc);
         } catch (DocumentException | IOException e) {

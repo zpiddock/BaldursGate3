@@ -67,6 +67,7 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
     @Override
     public boolean uninstall(Mod mod) {
 
-        return ModuleSelector.GENERIC_MODULE.getModInstaller().uninstall(mod);
+        BG3MInstaller installer = new BG3MInstaller(module);
+        return installer.uninstallBG3M(mod);
     }
 }

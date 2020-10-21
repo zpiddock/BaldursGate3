@@ -62,4 +62,58 @@ public class BG3Mod {
                 .addAttribute("type", type)
                 .addAttribute("value", value);
     }
+
+    public void removeModShortDesc(Element modChildren) {
+
+        modChildren.selectNodes("node").forEach(node -> {
+
+            Element element = (Element)node;
+            element.attributes().forEach(attr -> {
+
+                if(attr.getValue().equalsIgnoreCase("ModuleShortDesc")) {
+
+                    element.selectNodes("attribute").forEach(msdNode -> {
+
+                        Element msdElement = (Element)msdNode;
+                        msdElement.attributes().forEach(msdAttr -> {
+
+                            if(msdAttr.getValue().equalsIgnoreCase("Folder")) {
+
+                                if(msdElement.attribute("value").getValue().equalsIgnoreCase(this.folderName)) {
+
+                                    modChildren.remove(node);
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    }
+
+    public void removeModOrder(Element modOrderChildren) {
+
+        modOrderChildren.selectNodes("node").forEach(moduleNode -> {
+
+            Element moduleElement = (Element)moduleNode;
+
+            if(moduleElement.attribute("id").getValue().equalsIgnoreCase("Module")) {
+
+                moduleElement.selectNodes("attribute").forEach(attrNode -> {
+
+                    Element attrElement = (Element)attrNode;
+                    attrElement.attributes().forEach(attr -> {
+
+                        if(attr.getValue().equalsIgnoreCase("UUID")) {
+
+                            if(attrElement.attribute("value").getValue().equalsIgnoreCase(this.uuid)) {
+
+                                moduleElement.remove(attrNode);
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    }
 }

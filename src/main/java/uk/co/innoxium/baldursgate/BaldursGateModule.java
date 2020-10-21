@@ -72,7 +72,7 @@ public class BaldursGateModule extends AbstractModule {
     @Override
     public String getReadableGameName() {
 
-        return "Baldur's gate 3";
+        return "Baldur's Gate 3";
     }
 
     @Override

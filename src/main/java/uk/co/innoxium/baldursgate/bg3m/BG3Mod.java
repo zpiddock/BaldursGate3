@@ -20,7 +20,7 @@ public class BG3Mod {
 
         BG3Mod mod = new BG3Mod();
         mod.modName = obj.get("modName").getAsString();
-        mod.uuid = obj.get("GUID").getAsString();
+        mod.uuid = obj.get("UUID").getAsString();
         mod.folderName = obj.get("folderName").getAsString();
         mod.version = obj.get("version").getAsString();
         mod.MD5 = obj.get("MD5").getAsString();

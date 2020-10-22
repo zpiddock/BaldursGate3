@@ -102,6 +102,25 @@ public class BaldursGateModule extends AbstractModule {
     @Override
     public RunConfig getDefaultRunConfig() {
 
-        return ModuleSelector.GENERIC_MODULE.getDefaultRunConfig();
+        return new RunConfig() {
+
+            @Override
+            public String getStartCommand() {
+
+                return getGame().getAbsolutePath();
+            }
+
+            @Override
+            public String getProgramArgs() {
+
+                return "";
+            }
+
+            @Override
+            public String getWorkingDir() {
+
+                return new File(getGame().getParentFile().getParentFile(), "Launcher").getAbsolutePath();
+            }
+        };
     }
 }

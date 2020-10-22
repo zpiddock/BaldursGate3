@@ -161,6 +161,8 @@ public class PAKInstaller {
             if(type == BaldursGateModInstaller.ModType.PAK) {
 
                 File playerProfile = new File(BG3Settings.playerProfile);
+                File backup = new File(playerProfile, "modsettings.backup.lsx");
+                if(!backup.canWrite()) backup.setWritable(true);
                 FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
                 // Extract to temp location
                 File temp = Files.createTempDirectory("bg3").toFile();

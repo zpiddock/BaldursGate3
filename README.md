@@ -2,9 +2,6 @@
 
 This module enables Baldur's Gate 3 support in Candor Mod Manager.
 
-# This is very much WIP and does not include the ability to uninstall currently!
-download candor and the mod manager from the releases tab
-
 # How should a mod be laid out?
 
 You can either follow the steps below,  

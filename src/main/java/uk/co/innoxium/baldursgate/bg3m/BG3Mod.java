@@ -30,11 +30,7 @@ public class BG3Mod {
 
     public Element toModOrder(Element parent) {
 
-        Element moduleNode = (Element) parent.selectSingleNode("node");
-        if(moduleNode == null) {
-
-            moduleNode = parent.addElement("node").addAttribute("id", "Module");
-        }
+        Element moduleNode = parent.addElement("node").addAttribute("id", "Module");
 
         return moduleNode
                 .addElement("attribute")
@@ -108,7 +104,7 @@ public class BG3Mod {
 
                             if(attrElement.attribute("value").getValue().equalsIgnoreCase(this.uuid)) {
 
-                                moduleElement.remove(attrNode);
+                                modOrderChildren.remove(moduleNode);
                             }
                         }
                     });

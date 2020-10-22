@@ -1,4 +1,4 @@
-package uk.co.innoxium.baldursgate.bg3m;
+package uk.co.innoxium.baldursgate.bg3m.installer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -12,9 +12,12 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.xml.sax.SAXException;
 import uk.co.innoxium.baldursgate.BG3Settings;
+import uk.co.innoxium.baldursgate.BaldursGateModInstaller;
 import uk.co.innoxium.baldursgate.BaldursGateModule;
+import uk.co.innoxium.baldursgate.bg3m.BG3Mod;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModule;
+import uk.co.innoxium.candor.util.Utils;
 import uk.co.innoxium.cybernize.archive.Archive;
 import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
 import uk.co.innoxium.cybernize.json.JsonUtil;
@@ -23,19 +26,22 @@ import uk.co.innoxium.cybernize.util.FileUtil;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class BG3MInstaller {
+public class PAKInstaller {
 
     private final AbstractModule module;
     private final String xPath = "//save/region/node/children/node";
+    private final BaldursGateModInstaller.ModType type;
 
-    public BG3MInstaller(AbstractModule module) {
+    public PAKInstaller(AbstractModule module, BaldursGateModInstaller.ModType type) {
 
         this.module = module;
+        this.type = type;
     }
 
     /**
@@ -47,31 +53,36 @@ public class BG3MInstaller {
      * - write xml
      * - fallback on modsettings.backup.lsx
      * - remove paks
-     * @param mod
-     * @return
+     * @param mod - The mod to uninstall
+     * @return true if already disabled, or uninstalled correctly
      */
     public boolean uninstallBG3M(Mod mod) {
 
+        if(mod.getState() == Mod.State.DISABLED) return true;
+
         try {
 
-            File playerProfile = new File(BG3Settings.playerProfile);
-            FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
+            if(type == BaldursGateModInstaller.ModType.PAK) {
 
-            // Extract to temp location
-            File temp = Files.createTempDirectory("bg3").toFile();
-            Archive archive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).outputDirectory(temp).build();
-            archive.extract();
+                File playerProfile = new File(BG3Settings.playerProfile);
+                FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
 
-            File info = new File(temp, "info.json");
-            JsonObject contents = JsonUtil.getObjectFromPath(info.toPath());
+                // Extract to temp location
+                File temp = Files.createTempDirectory("bg3").toFile();
+                Archive archive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).outputDirectory(temp).build();
+                archive.extract();
 
-            JsonArray modsArray = JsonUtil.getArray(contents, "mods");
+                File info = new File(temp, "info.json");
+                JsonObject contents = JsonUtil.getObjectFromPath(info.toPath());
 
-            modsArray.forEach(jsonElement -> {
+                JsonArray modsArray = JsonUtil.getArray(contents, "mods");
 
-                BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject)jsonElement);
-                removeXMLElements(bg3Mod);
-            });
+                modsArray.forEach(jsonElement -> {
+
+                    BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject) jsonElement);
+                    removeXMLElements(bg3Mod);
+                });
+            }
             mod.getAssociatedFiles().forEach(element -> {
 
                 FileUtils.deleteQuietly(new File(element.getAsString()));
@@ -147,39 +158,64 @@ public class BG3MInstaller {
         //Steps
         try {
 
-            File playerProfile = new File(BG3Settings.playerProfile);
-            FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
-            // Extract to temp location
-            File temp = Files.createTempDirectory("bg3").toFile();
-            Archive archive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).outputDirectory(temp).build();
-            archive.extract();
+            if(type == BaldursGateModInstaller.ModType.PAK) {
 
-            File info = new File(temp, "info.json");
-            JsonObject contents = JsonUtil.getObjectFromPath(info.toPath());
+                File playerProfile = new File(BG3Settings.playerProfile);
+                FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
+                // Extract to temp location
+                File temp = Files.createTempDirectory("bg3").toFile();
+                Archive archive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).outputDirectory(temp).build();
+                archive.extract();
 
-            JsonArray modsArray = JsonUtil.getArray(contents, "mods");
+                File info = new File(temp, "info.json");
+                JsonObject contents = JsonUtil.getObjectFromPath(info.toPath());
 
-            JsonArray associatedPaks = new JsonArray();
+                JsonArray modsArray = JsonUtil.getArray(contents, "mods");
 
-            modsArray.forEach(jsonElement -> {
+                JsonArray associatedPaks = new JsonArray();
 
-                BG3Mod bg3Mod = BG3Mod.fromJson(jsonElement.getAsJsonObject());
-                File modPak = new File(temp, bg3Mod.folderName + ".pak");
-                createAndMergeXML(bg3Mod);
+                modsArray.forEach(jsonElement -> {
 
-                try {
+                    BG3Mod bg3Mod = BG3Mod.fromJson(jsonElement.getAsJsonObject());
+                    File modPak = new File(temp, bg3Mod.folderName + ".pak");
 
-                    File newPakFile = new File(module.getModsFolder(), bg3Mod.folderName + ".pak");
-                    associatedPaks.add(newPakFile.getAbsolutePath());
-                    FileUtils.copyFile(modPak, newPakFile);
-                } catch (IOException e) {
+                    createAndMergeXML(bg3Mod);
 
-                    e.printStackTrace();
+                    try {
+
+                        File newPakFile = new File(module.getModsFolder(), bg3Mod.folderName + ".pak");
+                        associatedPaks.add(newPakFile.getAbsolutePath());
+                        FileUtils.copyFile(modPak, newPakFile);
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+                    }
+                });
+                mod.setAssociatedFiles(associatedPaks);
+
+                return true;
+            } else if(type == BaldursGateModInstaller.ModType.PAK_ONLY) {
+
+                // Installer for pak only mods, such as IgnoreMessage
+                File temp = Files.createTempDirectory("bg3").toFile();
+                Archive archive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).outputDirectory(temp).build();
+                archive.extract();
+
+                JsonArray associatedPaks = new JsonArray();
+
+                for (File pak : temp.listFiles()) {
+
+                    if(Utils.getExtension(pak).equalsIgnoreCase("pak")) {
+
+                        File newPakFile = new File(module.getModsFolder(), pak.getName());
+                        FileUtils.copyFile(pak, newPakFile);
+                        associatedPaks.add(newPakFile.getAbsolutePath());
+                    }
                 }
-            });
-            mod.setAssociatedFiles(associatedPaks);
-
-            return true;
+                mod.setAssociatedFiles(associatedPaks);
+                return associatedPaks.size() > 0;
+            }
+            return false;
         } catch (IOException e) {
 
             e.printStackTrace();

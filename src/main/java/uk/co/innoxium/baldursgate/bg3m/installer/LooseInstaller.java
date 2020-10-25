@@ -2,7 +2,7 @@ package uk.co.innoxium.baldursgate.bg3m.installer;
 
 import org.apache.commons.io.FileUtils;
 import uk.co.innoxium.baldursgate.BaldursGateModule;
-import uk.co.innoxium.baldursgate.file.LooseFileVisitor;
+import uk.co.innoxium.baldursgate.bg3m.visitor.LooseFileVisitor;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModule;
 import uk.co.innoxium.cybernize.archive.Archive;
@@ -25,37 +25,14 @@ public class LooseInstaller {
     public boolean installLoose(Mod mod) {
 
         // Copy any loose files already found to temp directory
-        File bg3LooseTemp = null;
         File modLooseTemp = null;
         try {
 
-            bg3LooseTemp = Files.createTempDirectory("bg3Loose").toFile();
             modLooseTemp = Files.createTempDirectory("modLoose").toFile();
 
-            System.out.println(bg3LooseTemp);
             System.out.println(modLooseTemp);
 
             File dataDirectory = new File(module.gameHome, "data");
-            // We dont want to copy all pak files, due to this being like ~30gb, only the files that could be affected.
-            File[] files = dataDirectory.listFiles((fileName) -> {
-
-                if(fileName.isDirectory() && !fileName.getName().equalsIgnoreCase("Localization")) {
-
-                    return true;
-                }
-                return !fileName.getName().endsWith(".pak") && !fileName.getName().equalsIgnoreCase("Localization");
-            });
-            for(File file : files) {
-
-                System.out.println(file.getName());
-                if(file.isDirectory()) {
-
-                    FileUtils.copyDirectory(file, new File(bg3LooseTemp, file.getName()));
-                } else {
-                    FileUtils.copyFileToDirectory(file, bg3LooseTemp);
-                }
-            }
-//            FileUtils.copyDirectory(dataDirectory, bg3LooseTemp);
 
             // Extract archive to separate temp directory
             Archive archive = new ArchiveBuilder(mod.getFile()).outputDirectory(modLooseTemp).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).build();
@@ -64,9 +41,12 @@ public class LooseInstaller {
             // For each file in the in hierarchy, copy it, candor will ask about any files that need overwriting or merging
             // If they are to be merged, handle that in the appropriate file merger.
 
-            LooseFileVisitor visitor = new LooseFileVisitor(this, bg3LooseTemp.toPath());
-            Files.walkFileTree(modLooseTemp.toPath(), visitor);
+            LooseFileVisitor visitor = new LooseFileVisitor(this, modLooseTemp.toPath());
+            Files.walkFileTree(modLooseTemp.toPath(), visitor); // This pass builds a list of mod files
+            visitor.source = null;
+            Files.walkFileTree(dataDirectory.toPath(), visitor); // This pass acts on the list
 
+            visitor.modFiles.forEach(System.out::println);
 
 
             // Once all files have been handled correctly, copy to DATA folder

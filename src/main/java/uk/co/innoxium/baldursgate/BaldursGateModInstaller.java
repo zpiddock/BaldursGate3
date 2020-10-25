@@ -9,8 +9,11 @@ import uk.co.innoxium.candor.module.AbstractModule;
 import uk.co.innoxium.candor.util.NativeDialogs;
 import uk.co.innoxium.cybernize.archive.Archive;
 import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
+import uk.co.innoxium.cybernize.zip.ZipUtils;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -50,9 +53,9 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
             }
             case DATA -> {
 
-//                NativeDialogs.showErrorMessage("Loose File Mods are not supported in this version of the BG3 Module\nCheck our nexus page for updates.");
-//                return false;
-                return new LooseInstaller(module).installLoose(mod);
+                NativeDialogs.showErrorMessage("Loose File Mods are not supported in this version of the BG3 Module\nCheck our nexus page for updates.");
+                return false;
+//                return new LooseInstaller(module).installLoose(mod);
             }
         }
         return false;
@@ -97,18 +100,32 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
 
             try {
 
-                ZipFile zip = new ZipFile(mod.getFile());
-                ZipEntry info = zip.getEntry("info.json");
-                if(info != null) {
+                if(ZipUtils.isZip(mod.getFile())) {
 
-                    return ModType.PAK; // Mod contains both info.json and any amount of .pak files
+                    ZipFile zip = new ZipFile(mod.getFile());
+                    ZipEntry info = zip.getEntry("info.json");
+                    if (info != null) {
+
+                        return ModType.PAK; // Mod contains both info.json and any amount of .pak files
+                    } else {
+
+                        if (zip.stream().anyMatch(ze -> ze.getName().contains(".pak"))) {
+
+                            return ModType.PAK_ONLY; // Mod only contains a .pak
+                        }
+                        return ModType.DATA; // Mod does not contain a .pak or info.json
+                    }
                 } else {
 
-                    if(zip.stream().anyMatch(ze -> ze.getName().contains(".pak"))) {
+                    Archive modArchive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).build();
+                    if(modArchive.getAllArchiveItems().stream().anyMatch(item -> item.getFilePath().contains("info.json"))) {
 
-                        return ModType.PAK_ONLY; // Mod only contains a .pak
+                        return ModType.PAK;
+                    } else if(modArchive.getAllArchiveItems().stream().anyMatch(item -> item.getFilePath().contains(".pak"))) {
+
+                        return ModType.PAK_ONLY;
                     }
-                    return ModType.DATA; // Mod does not contain a .pak or info.json
+                    return ModType.DATA;
                 }
             } catch (IOException e) {
 

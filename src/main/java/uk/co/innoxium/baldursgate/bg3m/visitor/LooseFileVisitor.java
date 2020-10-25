@@ -1,14 +1,14 @@
-package uk.co.innoxium.baldursgate.file;
+package uk.co.innoxium.baldursgate.bg3m.visitor;
 
+import com.google.common.io.Files;
 import uk.co.innoxium.baldursgate.bg3m.installer.LooseInstaller;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.TERMINATE;
@@ -16,14 +16,14 @@ import static java.nio.file.FileVisitResult.TERMINATE;
 public class LooseFileVisitor extends SimpleFileVisitor<Path> {
 
     private final LooseInstaller installer;
-    private final Path dataFiles;
+    public Path source;
 
-    public Path folderToCopy = null;
+    public ArrayList<String> modFiles = new ArrayList<>();
 
-    public LooseFileVisitor(LooseInstaller installer, Path dataFiles) {
+    public LooseFileVisitor(LooseInstaller installer, Path source) {
 
         this.installer = installer;
-        this.dataFiles = dataFiles;
+        this.source = source;
     }
 
     // Print information about
@@ -31,25 +31,24 @@ public class LooseFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
 
+        if(source == null) {
+
+
+        } else {
+
+            String fileName = file.toFile().getAbsolutePath();
+            String toReplace = source.toFile().getAbsolutePath();
+            String newFileName = fileName.substring(toReplace.length() + 1);
+            modFiles.add(newFileName);
+        }
+
         return CONTINUE;
     }
 
     // Print each directory visited.
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
 
-        System.out.format("Directory: %s%n", dir);
-
-        if(dir.toFile().isDirectory()) {
-
-            String fileName = dir.getFileName().toString();
-            if(fileName.equalsIgnoreCase("Data") || fileName.equalsIgnoreCase("Generated")) {
-
-                System.out.println(fileName);
-                folderToCopy = new File(dir.toFile().getParentFile(), fileName).toPath();
-                return TERMINATE;
-            }
-        }
         return CONTINUE;
     }
 

@@ -96,7 +96,7 @@ public class BaldursGateModule extends AbstractModule {
     @Override
     public String getModFileFilterList() {
 
-        return "zip";
+        return "zip,rar";
     }
 
     @Override

@@ -65,7 +65,9 @@ public class PAKInstaller {
             if(type == BaldursGateModInstaller.ModType.PAK) {
 
                 File playerProfile = new File(BG3Settings.playerProfile);
-                FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
+                File modSettingsBackup = new File(playerProfile, "modsettings.backup.lsx");
+                if(!modSettingsBackup.canWrite()) modSettingsBackup.setWritable(true);
+                FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), modSettingsBackup);
 
                 // Extract to temp location
                 File temp = Files.createTempDirectory("bg3").toFile();
@@ -77,11 +79,18 @@ public class PAKInstaller {
 
                 JsonArray modsArray = JsonUtil.getArray(contents, "mods");
 
-                modsArray.forEach(jsonElement -> {
+                if(modsArray != null) {
 
-                    BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject) jsonElement);
+                    modsArray.forEach(jsonElement -> {
+
+                        BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject) jsonElement);
+                        removeXMLElements(bg3Mod);
+                    });
+                } else {
+
+                    BG3Mod bg3Mod = BG3Mod.fromJson(contents);
                     removeXMLElements(bg3Mod);
-                });
+                }
             }
             mod.getAssociatedFiles().forEach(element -> {
 
@@ -161,9 +170,9 @@ public class PAKInstaller {
             if(type == BaldursGateModInstaller.ModType.PAK) {
 
                 File playerProfile = new File(BG3Settings.playerProfile);
-                File backup = new File(playerProfile, "modsettings.backup.lsx");
-                if(!backup.canWrite()) backup.setWritable(true);
-                FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), new File(playerProfile, "modsettings.backup.lsx"));
+                File modSettingsBackup = new File(playerProfile, "modsettings.backup.lsx");
+                if(!modSettingsBackup.canWrite()) modSettingsBackup.setWritable(true);
+                FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), modSettingsBackup);
                 // Extract to temp location
                 File temp = Files.createTempDirectory("bg3").toFile();
                 Archive archive = new ArchiveBuilder(mod.getFile()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).outputDirectory(temp).build();
@@ -176,15 +185,35 @@ public class PAKInstaller {
 
                 JsonArray associatedPaks = new JsonArray();
 
-                modsArray.forEach(jsonElement -> {
+                // For mods which use the correct info.json
+                if(modsArray != null) {
 
-                    BG3Mod bg3Mod = BG3Mod.fromJson(jsonElement.getAsJsonObject());
-                    File modPak = new File(temp, bg3Mod.folderName + ".pak");
+                    modsArray.forEach(jsonElement -> {
 
+                        BG3Mod bg3Mod = BG3Mod.fromJson(jsonElement.getAsJsonObject());
+                        File modPak = new File(temp, bg3Mod.folderName + ".pak");
+
+                        createAndMergeXML(bg3Mod);
+
+                        try {
+
+                            File newPakFile = new File(module.getModsFolder(), bg3Mod.folderName + ".pak");
+                            associatedPaks.add(newPakFile.getAbsolutePath());
+                            FileUtils.copyFile(modPak, newPakFile);
+                        } catch (IOException e) {
+
+                            e.printStackTrace();
+                        }
+                    });
+                } else {
+
+                    // For mods which use the incorrect mods.json - Support for a while
+                    BG3Mod bg3Mod = BG3Mod.fromJson(contents);
                     createAndMergeXML(bg3Mod);
 
                     try {
 
+                        File modPak = new File(temp, bg3Mod.folderName + ".pak");
                         File newPakFile = new File(module.getModsFolder(), bg3Mod.folderName + ".pak");
                         associatedPaks.add(newPakFile.getAbsolutePath());
                         FileUtils.copyFile(modPak, newPakFile);
@@ -192,7 +221,7 @@ public class PAKInstaller {
 
                         e.printStackTrace();
                     }
-                });
+                }
                 mod.setAssociatedFiles(associatedPaks);
 
                 return true;
@@ -296,6 +325,7 @@ public class PAKInstaller {
     private void writeXMLToFile(Document document) throws IOException {
 
         File modsettings = new File(BG3Settings.playerProfile, "modsettings.lsx");
+        if(!modsettings.canWrite()) modsettings.setWritable(true);
         OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(modsettings), StandardCharsets.UTF_8);
 
         OutputFormat format = OutputFormat.createPrettyPrint();
@@ -307,18 +337,5 @@ public class PAKInstaller {
         xmlWriter.flush();
 
         xmlWriter.close();
-    }
-
-    public boolean verifyMod(Mod mod) {
-
-        try(ZipFile zipFile = new ZipFile(mod.getFile())) {
-
-            ZipEntry info = zipFile.getEntry("info.json");
-            return info != null;
-        } catch (IOException e) {
-
-            e.printStackTrace();
-            return false;
-        }
     }
 }

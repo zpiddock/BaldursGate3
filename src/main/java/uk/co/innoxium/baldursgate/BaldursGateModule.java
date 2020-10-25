@@ -21,8 +21,8 @@ public class BaldursGateModule extends AbstractModule {
     }
 
     private File game;
-    protected File gameHome;
-    private static final File bg3Docs =
+    public File gameHome;
+    public static final File bg3Docs =
             new File(FileSystemView.getFileSystemView().getDefaultDirectory().getAbsoluteFile(),
                     "Larian Studios/Baldur's Gate 3");
     public static File playerProfiles = new File(bg3Docs, "PlayerProfiles");

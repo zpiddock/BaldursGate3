@@ -50,60 +50,12 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
             }
             case DATA -> {
 
-                NativeDialogs.showErrorMessage("Loose File Mods are not supported in this version of the BG3 Module\nCheck our nexus page for updates.");
-                return false;
-//                return new LooseInstaller(module).installLoose(mod);
+//                NativeDialogs.showErrorMessage("Loose File Mods are not supported in this version of the BG3 Module\nCheck our nexus page for updates.");
+//                return false;
+                return new LooseInstaller(module).installLoose(mod);
             }
         }
         return false;
-
-//        PAKInstaller installer = new PAKInstaller(module);
-//        if(installer.verifyMod(mod)) {
-//
-//            return installer.installBG3M(mod);
-//        } else {
-//
-//            // Currently we throw an error, we should treat it as a data mod?
-//
-//            NativeDialogs.showInfoDialog("Baldur's Gate 3 Module",
-//                    String.format("The mod %s is not a valid bg3 mod, and cannot be installed.\nView the authors instructions", mod.getReadableName()),
-//                    "ok",
-//                    "error",
-//                    true);
-//            return false;
-//        }
-//        if(Utils.getExtension(mod.getFile()).equalsIgnoreCase("pak")) {
-//
-//            return installPak(mod);
-//        }
-//
-//        try {
-//
-//            return installArchive(mod);
-//        } catch (IOException e) {
-//
-//            e.printStackTrace();
-//            return false;
-//        }
-    }
-
-    private boolean installPak(Mod mod) {
-
-        try {
-
-            FileUtils.copyFileToDirectory(mod.getFile(), module.getModsFolder());
-        } catch (IOException e) {
-
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    private boolean installArchive(Mod mod) throws IOException {
-
-        Archive archive = new ArchiveBuilder(mod.getFile()).outputDirectory(module.getModsFolder()).type(ArchiveBuilder.ArchiveType.SEVEN_ZIP).build();
-        return archive.extract();
     }
 
     @Override

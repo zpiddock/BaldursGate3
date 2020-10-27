@@ -5,7 +5,8 @@ This module enables Baldur's Gate 3 support in Candor Mod Manager.
 # How should a mod be laid out?
 
 You can either follow the steps below,  
-Or use the Tool from ShinyHobo, which can be found [here](https://github.com/ShinyHobo/bg3-mod-packer)
+Or use the Tool from ShinyHobo, which can be found [here](https://github.com/ShinyHobo/bg3-mod-packer)  
+For loose file mods, please follow the guide [here](https://github.com/ShadowChild/BaldursGate3/loose-file-spec.md)
 
 # Mods should be a zip archive
 

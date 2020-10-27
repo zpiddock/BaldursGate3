@@ -15,6 +15,7 @@ import uk.co.innoxium.baldursgate.BG3Settings;
 import uk.co.innoxium.baldursgate.BaldursGateModInstaller;
 import uk.co.innoxium.baldursgate.BaldursGateModule;
 import uk.co.innoxium.baldursgate.bg3m.BG3Mod;
+import uk.co.innoxium.baldursgate.bg3m.MetaInfo;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModule;
 import uk.co.innoxium.candor.util.Utils;
@@ -83,12 +84,17 @@ public class PAKInstaller {
 
                     modsArray.forEach(jsonElement -> {
 
-                        BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject) jsonElement);
+                        MetaInfo bg3Mod;
+                        if(contents.has("md5"))
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V3);
+                        else
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V2);
+//                        BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject) jsonElement);
                         removeXMLElements(bg3Mod);
                     });
                 } else {
 
-                    BG3Mod bg3Mod = BG3Mod.fromJson(contents);
+                    MetaInfo bg3Mod = new MetaInfo(MetaInfo.MetaType.V1);
                     removeXMLElements(bg3Mod);
                 }
             }
@@ -104,7 +110,7 @@ public class PAKInstaller {
         return false;
     }
 
-    private boolean removeXMLElements(BG3Mod mod) {
+    private boolean removeXMLElements(MetaInfo mod) {
 
         File modsetings = new File(BG3Settings.playerProfile, "modsettings.lsx");
 
@@ -190,14 +196,19 @@ public class PAKInstaller {
 
                     modsArray.forEach(jsonElement -> {
 
-                        BG3Mod bg3Mod = BG3Mod.fromJson(jsonElement.getAsJsonObject());
-                        File modPak = new File(temp, bg3Mod.folderName + ".pak");
+                        MetaInfo bg3Mod;
+                        if(contents.has("MD5"))
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V3);
+                        else
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V2);
+
+                        File modPak = new File(temp, bg3Mod.getFolder() + ".pak");
 
                         createAndMergeXML(bg3Mod);
 
                         try {
 
-                            File newPakFile = new File(module.getModsFolder(), bg3Mod.folderName + ".pak");
+                            File newPakFile = new File(module.getModsFolder(), bg3Mod.getFolder() + ".pak");
                             associatedPaks.add(newPakFile.getAbsolutePath());
                             FileUtils.copyFile(modPak, newPakFile);
                         } catch (IOException e) {
@@ -208,13 +219,14 @@ public class PAKInstaller {
                 } else {
 
                     // For mods which use the incorrect mods.json - Support for a while
-                    BG3Mod bg3Mod = BG3Mod.fromJson(contents);
+                    MetaInfo bg3Mod = new MetaInfo(MetaInfo.MetaType.V1);
+//                    BG3Mod bg3Mod = BG3Mod.fromJson(contents);
                     createAndMergeXML(bg3Mod);
 
                     try {
 
-                        File modPak = new File(temp, bg3Mod.folderName + ".pak");
-                        File newPakFile = new File(module.getModsFolder(), bg3Mod.folderName + ".pak");
+                        File modPak = new File(temp, bg3Mod.getFolder() + ".pak");
+                        File newPakFile = new File(module.getModsFolder(), bg3Mod.getFolder() + ".pak");
                         associatedPaks.add(newPakFile.getAbsolutePath());
                         FileUtils.copyFile(modPak, newPakFile);
                     } catch (IOException e) {
@@ -254,7 +266,7 @@ public class PAKInstaller {
         }
     }
 
-    private void createAndMergeXML(BG3Mod mod) {
+    private void createAndMergeXML(MetaInfo mod) {
 
         File modsetings = new File(BG3Settings.playerProfile, "modsettings.lsx");
         try {

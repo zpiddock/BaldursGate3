@@ -13,25 +13,23 @@ import org.dom4j.io.XMLWriter;
 import org.xml.sax.SAXException;
 import uk.co.innoxium.baldursgate.BG3Settings;
 import uk.co.innoxium.baldursgate.BaldursGateModInstaller;
-import uk.co.innoxium.baldursgate.BaldursGateModule;
-import uk.co.innoxium.baldursgate.bg3m.BG3Mod;
 import uk.co.innoxium.baldursgate.bg3m.MetaInfo;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModule;
+import uk.co.innoxium.candor.util.NativeDialogs;
 import uk.co.innoxium.candor.util.Utils;
 import uk.co.innoxium.cybernize.archive.Archive;
 import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
 import uk.co.innoxium.cybernize.json.JsonUtil;
-import uk.co.innoxium.cybernize.util.FileUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public class PAKInstaller {
 
@@ -79,22 +77,27 @@ public class PAKInstaller {
                 JsonObject contents = JsonUtil.getObjectFromPath(info.toPath());
 
                 JsonArray modsArray = JsonUtil.getArray(contents, "mods");
+                if(modsArray == null) {
+
+                    // Attempt to get from caps too
+                    modsArray = JsonUtil.getArray(contents, "Mods");
+                }
 
                 if(modsArray != null) {
 
                     modsArray.forEach(jsonElement -> {
 
                         MetaInfo bg3Mod;
-                        if(contents.has("md5"))
-                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V3);
+                        if(contents.has("MD5"))
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V3).fromJson(jsonElement.getAsJsonObject());
                         else
-                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V2);
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V2).fromJson(jsonElement.getAsJsonObject());
 //                        BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject) jsonElement);
                         removeXMLElements(bg3Mod);
                     });
                 } else {
 
-                    MetaInfo bg3Mod = new MetaInfo(MetaInfo.MetaType.V1);
+                    MetaInfo bg3Mod = new MetaInfo(MetaInfo.MetaType.V1).fromJson(contents);
                     removeXMLElements(bg3Mod);
                 }
             }
@@ -176,6 +179,12 @@ public class PAKInstaller {
             if(type == BaldursGateModInstaller.ModType.PAK) {
 
                 File playerProfile = new File(BG3Settings.playerProfile);
+                File modSettings = new File(playerProfile, "modsettings.lsx");
+                if(!modSettings.exists()) {
+
+                    NativeDialogs.showErrorMessage("ModSettings.lsx does not exist. Mod installation cannot continue.\nPlease repair your game!");
+                    return false;
+                }
                 File modSettingsBackup = new File(playerProfile, "modsettings.backup.lsx");
                 if(!modSettingsBackup.canWrite()) modSettingsBackup.setWritable(true);
                 FileUtils.copyFile(new File(playerProfile, "modsettings.lsx"), modSettingsBackup);
@@ -188,6 +197,11 @@ public class PAKInstaller {
                 JsonObject contents = JsonUtil.getObjectFromPath(info.toPath());
 
                 JsonArray modsArray = JsonUtil.getArray(contents, "mods");
+                if(modsArray == null) {
+
+                    // Try to get mods array from uppercase too
+                    modsArray = JsonUtil.getArray(contents, "Mods");
+                }
 
                 JsonArray associatedPaks = new JsonArray();
 
@@ -197,20 +211,34 @@ public class PAKInstaller {
                     modsArray.forEach(jsonElement -> {
 
                         MetaInfo bg3Mod;
-                        if(contents.has("MD5"))
-                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V3);
-                        else
-                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V2);
+                        File modPak;
+                        if(contents.has("MD5")) {
 
-                        File modPak = new File(temp, bg3Mod.getFolder() + ".pak");
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V3).fromJson(jsonElement.getAsJsonObject());
+//                            Arrays.stream(temp.listFiles()).iterator().forEachRemaining(System.out::println);
+                            modPak = temp.listFiles((dir, name) -> name.contains(".pak"))[0];
+                        } else {
+
+                            bg3Mod = new MetaInfo(MetaInfo.MetaType.V2).fromJson(jsonElement.getAsJsonObject());
+                            modPak = new File(temp, bg3Mod.getFolder() + ".pak");
+                        }
 
                         createAndMergeXML(bg3Mod);
 
                         try {
 
-                            File newPakFile = new File(module.getModsFolder(), bg3Mod.getFolder() + ".pak");
-                            associatedPaks.add(newPakFile.getAbsolutePath());
-                            FileUtils.copyFile(modPak, newPakFile);
+                            if(bg3Mod.getType() == MetaInfo.MetaType.V2) {
+
+                                File newPakFile = new File(module.getModsFolder(), bg3Mod.getFolder() + ".pak");
+                                associatedPaks.add(newPakFile.getAbsolutePath());
+                                FileUtils.copyFile(modPak, newPakFile);
+                            } else {
+
+                                File newPakFile = new File(module.getModsFolder(), modPak.getName());
+                                if(associatedPaks.size() < 1)
+                                    associatedPaks.add(newPakFile.getAbsolutePath());
+                                FileUtils.copyFile(modPak, newPakFile);
+                            }
                         } catch (IOException e) {
 
                             e.printStackTrace();
@@ -219,7 +247,7 @@ public class PAKInstaller {
                 } else {
 
                     // For mods which use the incorrect mods.json - Support for a while
-                    MetaInfo bg3Mod = new MetaInfo(MetaInfo.MetaType.V1);
+                    MetaInfo bg3Mod = new MetaInfo(MetaInfo.MetaType.V1).fromJson(contents);
 //                    BG3Mod bg3Mod = BG3Mod.fromJson(contents);
                     createAndMergeXML(bg3Mod);
 

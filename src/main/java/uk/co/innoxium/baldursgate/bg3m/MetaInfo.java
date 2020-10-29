@@ -49,6 +49,11 @@ public class MetaInfo {
         return uuid;
     }
 
+    public MetaType getType() {
+
+        return type;
+    }
+
     public enum MetaType {
 
         V1, // v1 is for the original info.json format.
@@ -62,18 +67,9 @@ public class MetaInfo {
 
         switch(type) {
 
-            case V1 -> {
-
-                ret = buildV1(obj);
-            }
-            case V2 -> {
-
-                ret = buildV2(obj);
-            }
-            case V3 -> {
-
-                ret = buildV3(obj);
-            }
+            case V1 -> ret = buildV1(obj);
+            case V2 -> ret = buildV2(obj);
+            case V3 -> ret = buildV3(obj);
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
         return ret;

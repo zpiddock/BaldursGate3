@@ -1,7 +1,5 @@
 package uk.co.innoxium.baldursgate;
 
-import org.apache.commons.io.FileUtils;
-import uk.co.innoxium.baldursgate.bg3m.installer.LooseInstaller;
 import uk.co.innoxium.baldursgate.bg3m.installer.PAKInstaller;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModInstaller;
@@ -12,8 +10,6 @@ import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
 import uk.co.innoxium.cybernize.zip.ZipUtils;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 

@@ -2,6 +2,7 @@ package uk.co.innoxium.baldursgate.bg3m;
 
 import com.google.gson.JsonObject;
 import org.dom4j.Element;
+import uk.co.innoxium.candor.util.NativeDialogs;
 
 public class MetaInfo {
 
@@ -63,41 +64,48 @@ public class MetaInfo {
 
     public MetaInfo fromJson(JsonObject obj) {
 
-        MetaInfo ret;
+        MetaInfo ret = null;
 
-        switch(type) {
+        try {
 
-            case V1 -> ret = buildV1(obj);
-            case V2 -> ret = buildV2(obj);
-            case V3 -> ret = buildV3(obj);
-            default -> throw new IllegalStateException("Unexpected value: " + type);
+            switch(type) {
+
+                case V1 -> ret = buildV1(obj);
+                case V2 -> ret = buildV2(obj);
+                case V3 -> ret = buildV3(obj);
+                default -> throw new IllegalStateException("Unexpected value: " + type);
+            }
+        } catch(NullPointerException e) {
+
+            e.printStackTrace();
+            NativeDialogs.showErrorMessage("The mod was formatted incorrectly, please report this to the mod author.");
         }
         return ret;
     }
 
-    private MetaInfo buildV1(JsonObject obj) {
+    private MetaInfo buildV1(JsonObject obj) throws NullPointerException {
 
         this.name = obj.get("modName").getAsString();
         this.author = "";
-        this.folder = obj.get("modFolder").getAsString();
+        this.folder = obj.get("folderName").getAsString();
         this.version = obj.get("version").getAsString();
         this.description = "";
-        this.uuid = obj.get("uuid").getAsString();
+        this.uuid = obj.get("UUID").getAsString();
         return this;
     }
 
-    private MetaInfo buildV2(JsonObject obj) {
+    private MetaInfo buildV2(JsonObject obj) throws NullPointerException {
 
         this.name = obj.get("modName").getAsString();
         this.author = "";
-        this.folder = obj.get("modFolder").getAsString();
+        this.folder = obj.get("folderName").getAsString();
         this.version = obj.get("version").getAsString();
         this.description = "";
-        this.uuid = obj.get("uuid").getAsString();
+        this.uuid = obj.get("UUID").getAsString();
         return this;
     }
 
-    private MetaInfo buildV3(JsonObject obj) {
+    private MetaInfo buildV3(JsonObject obj) throws NullPointerException {
 
         this.name = obj.get("Name").getAsString();
         this.author = obj.get("Author").getAsString();

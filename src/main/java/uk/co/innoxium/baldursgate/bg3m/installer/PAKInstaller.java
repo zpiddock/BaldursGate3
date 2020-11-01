@@ -93,6 +93,7 @@ public class PAKInstaller {
                         else
                             bg3Mod = new MetaInfo(MetaInfo.MetaType.V2).fromJson(jsonElement.getAsJsonObject());
 //                        BG3Mod bg3Mod = BG3Mod.fromJson((JsonObject) jsonElement);
+                        assert bg3Mod != null;
                         removeXMLElements(bg3Mod);
                     });
                 } else {

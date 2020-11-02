@@ -2,12 +2,9 @@ package uk.co.innoxium.baldursgate;
 
 import uk.co.innoxium.candor.module.AbstractModInstaller;
 import uk.co.innoxium.candor.module.AbstractModule;
-import uk.co.innoxium.candor.module.ModuleSelector;
 import uk.co.innoxium.candor.module.RunConfig;
 import uk.co.innoxium.candor.util.NativeDialogs;
-import uk.co.innoxium.candor.util.WindowUtils;
 
-import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 
@@ -102,7 +99,7 @@ public class BaldursGateModule extends AbstractModule {
     @Override
     public RunConfig getDefaultRunConfig() {
 
-        return new RunConfig() {
+        return new RunConfig("Game") {
 
             @Override
             public String getStartCommand() {

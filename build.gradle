@@ -15,25 +15,14 @@ repositories {
 
     maven {
 
-        name "Candor Bintray"
-        url "https://dl.bintray.com/candor/candor-alpha"
-    }
-
-    maven {
-
-        name "Cybernize Bintray"
-        url "https://dl.bintray.com/candor/cybernize"
-    }
-    maven {
-
-        name 'Swing Extensions repo'
-        url 'https://dl.bintray.com/innoxium/SwingExtensions'
+        name "Innoxium Repo"
+        url "https://repo.repsy.io/mvn/innoxium/innoxium"
     }
 }
 
 dependencies {
 
-    implementation 'uk.co.innoxium.candor:candor-api:0.2.17'
+    implementation 'uk.co.innoxium.candor:candor-api:0.2.18'
 
     implementation 'uk.co.innoxium.cybernize:cybernize:1.1.5'
     implementation 'com.electronwill.night-config:toml:3.6.3'

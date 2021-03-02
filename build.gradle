@@ -24,7 +24,7 @@ dependencies {
 
     implementation 'uk.co.innoxium.candor:candor-api:0.2.18'
 
-    implementation 'uk.co.innoxium.cybernize:cybernize:1.1.5'
+    implementation 'uk.co.innoxium.cybernize:cybernize:1.1.6'
     implementation 'com.electronwill.night-config:toml:3.6.3'
     implementation 'com.miglayout:miglayout-swing:5.2'
 

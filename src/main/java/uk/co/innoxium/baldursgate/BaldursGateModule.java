@@ -8,6 +8,7 @@ import uk.co.innoxium.candor.util.WindowUtils;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 
+
 public class BaldursGateModule extends AbstractModule {
 
     public static boolean loaded = false;
@@ -48,6 +49,33 @@ public class BaldursGateModule extends AbstractModule {
             PlayerProfileSelector profileSelector = new PlayerProfileSelector(playerProfiles);
             profileSelector.setVisible(true);
             WindowUtils.mainFrame.setFocusable(false);
+
+            // SUPER HACK TO ADD SWITCH BEFORE CANDOR VERSION 0.3.0
+            // TODO: Switch to pattern matching instanceof in candor 0.3.0
+//            if(Resources.currentScene instanceof ModScene) {
+//
+//                ModScene scene = (ModScene) Resources.currentScene;
+//
+//                try {
+//
+//                    Field fileMenu = scene.getClass().getField("fileMenu");
+//                    fileMenu.setAccessible(true);
+//                    JMenu _fileMenu = (JMenu) fileMenu.get(new JMenu());
+//
+//                    JMenuItem switchProfile = new JMenuItem("Switch Player Profile");
+//                    switchProfile.addActionListener(e -> {
+//
+//                        PlayerProfileSelector newProfileSelector = new PlayerProfileSelector(playerProfiles);
+//                        newProfileSelector.setVisible(true);
+//                        WindowUtils.mainFrame.setFocusable(false);
+//                    });
+//
+//                    _fileMenu.add(switchProfile);
+//                } catch(NoSuchFieldException | IllegalAccessException e) {
+//
+//                    e.printStackTrace();
+//                }
+//            }
 
 //            NativeDialogs.showInfoDialog("Baldur's Gate 3 Module",
 //                    "Please select the player profile to use\nClick ok to continue.",

@@ -16,6 +16,7 @@ public class BG3Settings {
 
     @Setting(category = "profile")
     @Setting.Comment("The path to player profile to use for installing mods to")
+    // This should not be relative, and should be absolute
     public static String playerProfile = "";
 
     public static void init() {

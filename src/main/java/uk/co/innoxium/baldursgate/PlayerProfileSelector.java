@@ -7,19 +7,18 @@ package uk.co.innoxium.baldursgate;
 import com.formdev.flatlaf.FlatIconColors;
 import net.miginfocom.swing.MigLayout;
 import uk.co.innoxium.candor.util.Resources;
+import uk.co.innoxium.candor.util.WindowUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 
 
 /**
  * @author Zach Piddock
  */
-public class PlayerProfileSelector extends JFrame {
+public class PlayerProfileSelector extends JDialog {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel dialogPane;
@@ -51,7 +50,6 @@ public class PlayerProfileSelector extends JFrame {
         okButton = new JButton();
 
         //======== this ========
-        setTitle("Baldur's Gate 3 Profile Selection");
         setAlwaysOnTop(true);
         setResizable(false);
         var contentPane = getContentPane();
@@ -141,27 +139,13 @@ public class PlayerProfileSelector extends JFrame {
 
     public PlayerProfileSelector(File playerProfileFolder) {
 
+        super(WindowUtils.mainFrame, "Baldur's Gate 3 Profile Selector", true);
+
         this.playerProfileFolder = playerProfileFolder;
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.setAlwaysOnTop(true);
         this.setIconImage(Resources.CANDOR_LOGO.getImage());
-        this.addWindowListener(new Adapter(this));
+//        this.addWindowListener(new Adapter(this));
         initComponents();
-    }
-}
-
-class Adapter extends WindowAdapter {
-
-    private final JFrame frame;
-
-    Adapter(JFrame frame) {
-
-        this.frame = frame;
-    }
-
-    @Override
-    public void windowIconified(WindowEvent we) {
-
-        frame.setState(JFrame.NORMAL);
     }
 }

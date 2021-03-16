@@ -12,6 +12,7 @@ repositories {
     jcenter()
     mavenCentral()
     maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url 'https://repository.apache.org/snapshots' }
 
     maven {
 
@@ -22,7 +23,7 @@ repositories {
 
 dependencies {
 
-    implementation 'uk.co.innoxium.candor:candor-api:0.2.18'
+    implementation 'uk.co.innoxium.candor:candor-api:0.2.20'
 
     implementation 'uk.co.innoxium.cybernize:cybernize:1.1.6'
     implementation 'com.electronwill.night-config:toml:3.6.3'

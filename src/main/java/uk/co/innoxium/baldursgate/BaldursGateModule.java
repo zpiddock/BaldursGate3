@@ -1,5 +1,6 @@
 package uk.co.innoxium.baldursgate;
 
+import uk.co.innoxium.candor.game.Game;
 import uk.co.innoxium.candor.module.AbstractModInstaller;
 import uk.co.innoxium.candor.module.AbstractModule;
 import uk.co.innoxium.candor.module.RunConfig;
@@ -104,6 +105,12 @@ public class BaldursGateModule extends AbstractModule {
     public String getReadableGameName() {
 
         return "Baldur's Gate 3";
+    }
+
+    @Override
+    public String getReadableGameName(Game game) {
+
+        return getReadableGameName();
     }
 
     @Override

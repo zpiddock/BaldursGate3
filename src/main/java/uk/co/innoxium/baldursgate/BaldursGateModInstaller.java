@@ -126,7 +126,7 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
             } catch (IOException e) {
 
                 e.printStackTrace();
-                NativeDialogs.showErrorMessage(String.format("The mod %s is not valid or not currently supported.", mod.getReadableName()));
+                NativeDialogs.showErrorWithUpload(String.format("The mod %s is not valid or not currently supported.\n Please contact Shadow on the discord at https://discord.gg/ezQBg7R", mod.getReadableName()));
                 return null;
             }
         }

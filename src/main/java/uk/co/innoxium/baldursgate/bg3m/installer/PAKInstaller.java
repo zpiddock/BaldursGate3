@@ -183,7 +183,7 @@ public class PAKInstaller {
                 File modSettings = new File(playerProfile, "modsettings.lsx");
                 if(!modSettings.exists()) {
 
-                    NativeDialogs.showErrorMessage("ModSettings.lsx does not exist. Mod installation cannot continue.\nPlease repair your game!");
+                    NativeDialogs.showErrorMessage("ModSettings.lsx does not exist. Mod installation cannot continue.\nTry running the game to generate this file.\n If this still isn't working, please contact us on Discord, which can be found in the \"About\" menu.");
                     return false;
                 }
                 File modSettingsBackup = new File(playerProfile, "modsettings.backup.lsx");

@@ -5,10 +5,12 @@ import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModInstaller;
 import uk.co.innoxium.candor.module.AbstractModule;
 import uk.co.innoxium.candor.util.NativeDialogs;
+import uk.co.innoxium.candor.util.Resources;
 import uk.co.innoxium.cybernize.archive.Archive;
 import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
 import uk.co.innoxium.cybernize.zip.ZipUtils;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -62,10 +64,13 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
 
         ModType modType = ModValidator.getTypeFromMod(mod);
 
-        // Should only be null if there was an error reading the file.
+        // Should be null if reading a file, OR if the mod is not valid currently.
         if(modType == null) {
 
-            return false;
+            // Since we are uninstalling, return true and warn the user user some files may be left over.
+            if(mod.getState() == Mod.State.ENABLED)
+                JOptionPane.showMessageDialog(Resources.currentScene, String.format("Mod %s will be removed, however we have detected it MAY be an invalid format\nso some residual files may remain.", mod.getReadableName()));
+            return true;
         }
 
         switch(modType) {
@@ -125,6 +130,7 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
                 }
             } catch (IOException e) {
 
+                // Most likely a loose mod.
                 e.printStackTrace();
                 NativeDialogs.showErrorWithUpload(String.format("The mod %s is not valid or not currently supported.\n Please contact Shadow on the discord at https://discord.gg/ezQBg7R", mod.getReadableName()));
                 return null;

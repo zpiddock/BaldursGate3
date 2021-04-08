@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
 
-    implementation 'uk.co.innoxium.candor:candor-api:0.2.20'
+    implementation 'uk.co.innoxium.candor:candor-api:0.3.0-pre'
 
     implementation 'uk.co.innoxium.cybernize:cybernize:1.1.6'
     implementation 'com.electronwill.night-config:toml:3.6.3'
@@ -51,8 +51,8 @@ dependencies {
 
 compileJava {
 
-    sourceCompatibility = JavaVersion.VERSION_14
-    targetCompatibility = JavaVersion.VERSION_14
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
 }
 
 shadowJar {

@@ -1,5 +1,6 @@
 package uk.co.innoxium.baldursgate;
 
+import org.apache.commons.math3.exception.NullArgumentException;
 import uk.co.innoxium.baldursgate.bg3m.installer.PAKInstaller;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModInstaller;
@@ -12,6 +13,7 @@ import uk.co.innoxium.cybernize.zip.ZipUtils;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -29,14 +31,14 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
     }
 
     @Override
-    public boolean install(Mod mod) {
+    public CompletableFuture<Boolean> install(Mod mod) {
 
         ModType modType = ModValidator.getTypeFromMod(mod);
 
         // Should only be null if there was an error reading the file.
         if(modType == null) {
 
-            return false;
+            return CompletableFuture.failedFuture(new NullArgumentException());
         }
 
         switch(modType) {
@@ -52,11 +54,11 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
             case DATA -> {
 
                 NativeDialogs.showErrorMessage("Loose File Mods are not supported in this version of the BG3 Module\nCheck our nexus page for updates.");
-                return false;
+                return CompletableFuture.completedFuture(false);
 //                return new LooseInstaller(module).installLoose(mod);
             }
         }
-        return false;
+        return CompletableFuture.completedFuture(false);
     }
 
     @Override

@@ -22,13 +22,11 @@ import uk.co.innoxium.cybernize.archive.Archive;
 import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
 import uk.co.innoxium.cybernize.json.JsonUtil;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PAKInstaller {
@@ -172,7 +170,7 @@ public class PAKInstaller {
      * @param mod - The mod to install
      * @return true if installed correctly
      */
-    public boolean installBG3M(Mod mod) {
+    public CompletableFuture<Boolean> installBG3M(Mod mod) {
 
         //Steps
         try {
@@ -184,7 +182,7 @@ public class PAKInstaller {
                 if(!modSettings.exists()) {
 
                     NativeDialogs.showErrorMessage("ModSettings.lsx does not exist. Mod installation cannot continue.\nTry running the game to generate this file.\n If this still isn't working, please contact us on Discord, which can be found in the \"About\" menu.");
-                    return false;
+                    return CompletableFuture.failedFuture(new FileNotFoundException("ModSettings.lsx not found"));
                 }
                 File modSettingsBackup = new File(playerProfile, "modsettings.backup.lsx");
                 if(!modSettingsBackup.canWrite()) modSettingsBackup.setWritable(true);
@@ -265,7 +263,7 @@ public class PAKInstaller {
                 }
                 mod.setAssociatedFiles(associatedPaks);
 
-                return true;
+                return CompletableFuture.completedFuture(true);
             } else if(type == BaldursGateModInstaller.ModType.PAK_ONLY) {
 
                 // Installer for pak only mods, such as IgnoreMessage
@@ -285,13 +283,13 @@ public class PAKInstaller {
                     }
                 }
                 mod.setAssociatedFiles(associatedPaks);
-                return associatedPaks.size() > 0;
+                return CompletableFuture.completedFuture(associatedPaks.size() > 0);
             }
-            return false;
+            return CompletableFuture.completedFuture(false);
         } catch (IOException e) {
 
             e.printStackTrace();
-            return false;
+            return CompletableFuture.failedFuture(e);
         }
     }
 

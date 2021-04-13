@@ -2,6 +2,10 @@
 
 This module enables Baldur's Gate 3 support in Candor Mod Manager.
 
+# Gotta Give Kudos
+Thanks to figs999 and Norbyte for the Patch3ModFixer.
+Thanks to Norbyte for LSLib.
+
 # How should a mod be laid out?
 
 You can either follow the steps below,  

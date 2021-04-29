@@ -1,0 +1,20 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: com.miglayout:miglayout-swing
+    versions:
+    - "5.3"
+  - dependency-name: uk.co.innoxium.candor:candor-api
+    versions:
+    - 0.3.0-pre3
+  - dependency-name: com.formdev:flatlaf
+    versions:
+    - "0.46"
+  - dependency-name: commons-io:commons-io
+    versions:
+    - 2.8.0

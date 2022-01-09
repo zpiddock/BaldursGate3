@@ -5,14 +5,17 @@ import uk.co.innoxium.baldursgate.bg3m.installer.PAKInstaller;
 import uk.co.innoxium.candor.mod.Mod;
 import uk.co.innoxium.candor.module.AbstractModInstaller;
 import uk.co.innoxium.candor.module.AbstractModule;
+import uk.co.innoxium.candor.util.Logger;
 import uk.co.innoxium.candor.util.NativeDialogs;
 import uk.co.innoxium.candor.util.Resources;
 import uk.co.innoxium.cybernize.archive.Archive;
 import uk.co.innoxium.cybernize.archive.ArchiveBuilder;
-import uk.co.innoxium.cybernize.zip.ZipUtils;
 
+import java.io.EOFException;
+import java.io.File;
 import javax.swing.*;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -103,7 +106,7 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
 
             try {
 
-                if(ZipUtils.isZip(mod.getFile())) {
+                if(isZip(mod.getFile())) {
 
                     ZipFile zip = new ZipFile(mod.getFile());
                     ZipEntry info = zip.getEntry("info.json");
@@ -132,12 +135,30 @@ public class BaldursGateModInstaller extends AbstractModInstaller {
                 }
             } catch (IOException e) {
 
-                // Most likely a loose mod.
-                e.printStackTrace();
-                NativeDialogs.showErrorWithUpload(String.format("The mod %s is not valid or not currently supported.\n Please contact Shadow on the discord at https://discord.gg/ezQBg7R", mod.getReadableName()));
+                if(e instanceof EOFException) {
+
+                    Logger.info("Could not read header on mod file, most likely corrupt.");
+                } else {
+                    e.printStackTrace();
+                    NativeDialogs.showErrorMessage(String.format("The mod %s is not valid or not currently supported.", mod.getReadableName()));
+                }
                 return null;
             }
         }
+    }
+
+    public static boolean isZip(File file) {
+
+        int fileSignature = 0;
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+
+            fileSignature = raf.readInt();
+        } catch(IOException e) {
+
+           e.printStackTrace();
+           return false;
+        }
+        return fileSignature == 0x504B0304 || fileSignature == 0x504B0506 || fileSignature == 0x504B0708;
     }
 
     public enum ModType {
